@@ -1,0 +1,47 @@
+/* 测试 files 预览静态资源引用（v2）：本文件由 preview-test-2.html 通过相对路径引用 */
+body {
+  margin: 0;
+  padding: 40px 20px;
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.panel {
+  max-width: 640px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 36px 44px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+h1 {
+  color: #e8590c; /* 醒目的橙色标题，验证 CSS 生效 */
+  margin-top: 0;
+  font-size: 30px;
+}
+
+.tagline {
+  color: #7048e8;
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 1px;
+}
+
+code {
+  background-color: #f3f0ff;
+  border-radius: 4px;
+  padding: 2px 6px;
+  font-size: 14px;
+  color: #5f3dc4;
+}
+
+.js-badge {
+  background-color: #fff4e6;
+  border: 2px dashed #e8590c;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-weight: 700;
+  color: #d9480f;
+}

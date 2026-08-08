@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview Static Files Test</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="card">
+    <h1>Preview static files test</h1>
+    <p class="subtitle">HTML 静态资源引用测试页面</p>
+    <p>如果你能看到本页带有蓝色标题、灰色背景和卡片样式，说明 <code>style.css</code> 已通过相对路径成功加载。</p>
+    <hr>
+    <p>下面这行内容由 <code>script.js</code> 在页面加载后动态写入：</p>
+    <p id="js-output" class="js-box">（等待 JS 执行…）</p>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

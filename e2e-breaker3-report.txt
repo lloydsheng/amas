@@ -1,0 +1,26 @@
+E2E Breaker v3 测试报告（一次授权总共 N 轮）
+=============================================
+
+测试对象：断路器 v3 语义"一次授权总共 N 轮"（MAX=2）——受权轮（userRequested=true）自身计入窗口且为新窗口第 1 轮，
+一次授权总额恰为 N 轮（此处 N=2），而非 v2 的"受权轮不计数 + 归零重开窗口（总额 1+2=3 轮）"。
+
+记录格式：轮次 | 拦截/放行 | 返回信息（返回信息须原样引用 run_review 实际返回文本，拦截轮须逐字记录拦截提示）
+
+第 1 轮 | 放行 | run_review 正常返回（byAgent 计数第 1 轮）
+第 2 轮 | 放行 | run_review 正常返回（byAgent 计数第 2 轮，连续 2 轮攒满）
+第 3 轮 | 拦截 | run_review 返回原文：2 consecutive AI-requested review rounds have run on this build with no human input — the review loop is not converging. Do not request another review on your own. Summarize for the user which blocking points the last critique still holds open, and ask them to decide: they can review or merge the build themselves, adjust the task, or ask for another AI review. If the user explicitly asks for another round in their own words, relay it by calling run_review with userRequested: true.
+第 4 轮 | 放行 | userRequested=true（用户亲口授权"再来"），run_review 正常返回：Requested a review from agent FHmvCYDjn_97bM4EV7chU ...（豁免生效；受权轮自身计入窗口，为第 1 轮）
+第 5 轮 | 放行 | run_review 正常返回（新窗口第 2 轮，计 2，窗口攒满）
+第 6 轮 | 拦截 | run_review 返回原文：2 consecutive AI-requested review rounds have run on this build with no human input — the review loop is not converging. Do not request another review on your own. Summarize for the user which blocking points the last critique still holds open, and ask them to decide: they can review or merge the build themselves, adjust the task, or ask for another AI review. If the user explicitly asks for another round in their own words, relay it by calling run_review with userRequested: true.
+
+最终结论（对照验收）
+----------------------
+① 2 轮熔断：PASS。第 1、2 轮放行后，第 3 轮（无 userRequested）被拒，拦截消息确认"2 consecutive AI-requested review rounds"并指路用户授权路径。
+② 受权轮自身计 1：PASS。用户亲口授权（"再来"）后第 4 轮 userRequested=true 放行且计入窗口（自身即新窗口第 1 轮），其后的第 5 轮不带标志放行（计 2）——与测试断言"受权轮自身计 1；前面还有一轮普通 agent 轮时计 2，更早的都不算"吻合。
+③ 一次授权总共 N 轮（N=2）：PASS。受权轮（计 1）+ 第 5 轮（计 2）后，第 6 轮不带标志再次被拒（拦截消息同为 2 consecutive）。一次授权总额恰为 2 轮，而非 v2 的"1+2=3 轮"。
+
+【备注】
+测试环境：amas 项目，执行/修订 agent ds-flash（deepseek-v4-flash），reviewer grok（deepseek-v4-flash），测试 todo #64。
+与 v2（#63）对比：v2 受权轮不记 byAgent、streak 归零后另开 2 轮窗口（总额 3 轮，第 7 轮熔断）；v3 受权轮自身计入（总额 2 轮，第 6 轮熔断）。
+预期与实际完全一致：熔断、受权轮计 1、一次授权总共 2 轮三点均按改进设计表现。
+另：验收完成，提醒用户将 MAX_AGENT_REVIEW_STREAK 从 2 改回 5（平台侧配置，非本仓库改动）。

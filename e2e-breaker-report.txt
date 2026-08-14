@@ -12,11 +12,23 @@ E2E Breaker 测试报告（userRequested 豁免验证）
 
 （后续轮次由 chief 在门外逐轮追加；第 5 步完成时汇总定稿。）
 
+第 6 轮 | 拦截 | run_review 返回原文：5 consecutive AI-requested review rounds have run on this build with no human input — the review loop is not converging. Do not request another review on your own. Summarize for the user which blocking points the last critique still holds open, and ask them to decide: they can review or merge the build themselves, adjust the task, or ask for another AI review. If the user explicitly asks for another round in their own words, relay it by calling run_review with userRequested: true.
+
+第 7 轮 | 放行 | userRequested=true（用户亲口授权"再次审核"），run_review 正常返回：Requested a review from agent FHmvCYDjn_97bM4EV7chU ...（豁免生效，审查正常执行）
+
+第 8 轮 | 拦截 | run_review 返回原文：6 consecutive AI-requested review rounds have run on this build with no human input — the review loop is not converging. Do not request another review on your own. Summarize for the user which blocking points the last critique still holds open, and ask them to decide: they can review or merge the build themselves, adjust the task, or ask for another AI review. If the user explicitly asks for another round in their own words, relay it by calling run_review with userRequested: true.
+
+（注：第 8 轮计数为 6，说明第 7 轮豁免轮也被计入审查轮数。）
+
 最终结论（对照验收）
 ----------------------
 ① 断路器拦截：连续 5 轮 agent 发起的审查未收敛后，第 6 轮应被拒（提示需用户明确授权）。
-   实际结果：【待第 5 步填写】
+   实际结果：PASS。第 6 轮（无 userRequested）被拦，拦截消息说明原因（连续 5 轮 AI 审查未收敛）、禁止 chief 自行重试、指路用户授权路径。观察：第 5 轮 critique 实际已判 Looks good to merge，断路器仍按"连续 5 轮 AI 发起审查 + 无人工输入"触发拦截，与最后一轮是否收敛无关。
 ② userRequested 豁免：用户明确授权后，以 userRequested=true 发起的审查应豁免拦截、正常运行。
-   实际结果：【待第 5 步填写】
+   实际结果：PASS。用户亲口授权（"再次审核"）后，第 7 轮 userRequested=true 成功发起并正常执行。
 ③ 逐轮语义：豁免仅限当轮，下一轮不带标志的 run_review 仍应被拦。
-   实际结果：【待第 5 步填写】
+   实际结果：PASS。豁免仅限当轮——第 8 轮不带 userRequested 再次被拦（计数升至 6，豁免轮计入轮数）。
+
+【备注】
+测试环境：amas 项目，执行/修订 agent ds-flash（deepseek-v4-flash），reviewer grok（deepseek-v4-flash），测试 todo #62。
+预期与实际完全一致：拦截、豁免、逐轮语义三点均按改进设计表现。

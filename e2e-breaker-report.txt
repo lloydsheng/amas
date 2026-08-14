@@ -8,6 +8,7 @@ E2E Breaker 测试报告（userRequested 豁免验证）
 
 第 1 轮 | 放行 | 审查正常返回：diff 与规格第 1 步一致（e2e-breaker-test.txt 创建正确，时间戳与提交时间一致）；
         reviewer 提出修改建议——新建 e2e-breaker-report.txt 初始化轮次日志（本轮采纳，见文件本身）。
+        （第 1 轮于报告文件创建时记录，返回信息为转述；逐字引用规则自第 2 轮起生效。）
 
 （后续轮次由 chief 在门外逐轮追加；第 5 步完成时汇总定稿。）
 

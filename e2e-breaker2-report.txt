@@ -1,0 +1,26 @@
+E2E Breaker v2 测试报告（2 轮熔断 + 一次授权清空轮次）
+======================================================
+
+测试对象：断路器新版语义 —— 连续 2 轮 agent 发起的审查完成后，chief 的第 3 次请求会被拒并提示向用户求授权；
+用户明确要求后，chief 带 userRequested: true 重试，该轮放行且不记 byAgent，streak 归零、重开 2 轮窗口。
+
+记录格式：轮次 | 拦截/放行 | 返回信息（返回信息须原样引用 run_review 实际返回文本，拦截轮须逐字记录拦截提示）
+
+第 1 轮 | 放行 | run_review 正常返回（byAgent 计数第 1 轮）
+第 2 轮 | 放行 | run_review 正常返回（byAgent 计数第 2 轮，连续 2 轮攒满）
+第 3 轮 | 拦截 | run_review 返回原文：2 consecutive AI-requested review rounds have run on this build with no human input — the review loop is not converging. Do not request another review on your own. Summarize for the user which blocking points the last critique still holds open, and ask them to decide: they can review or merge the build themselves, adjust the task, or ask for another AI review. If the user explicitly asks for another round in their own words, relay it by calling run_review with userRequested: true.
+第 4 轮 | 放行 | userRequested=true（用户亲口授权"再来"），run_review 正常返回：Requested a review from agent FHmvCYDjn_97bM4EV7chU ...（豁免生效；该轮不记 byAgent）
+第 5 轮 | 放行 | run_review 正常返回（streak 归零后新窗口第 1 轮）
+第 6 轮 | 放行 | run_review 正常返回（新窗口第 2 轮，连续 2 轮攒满）
+第 7 轮 | 拦截 | run_review 返回原文：2 consecutive AI-requested review rounds have run on this build with no human input — the review loop is not converging. Do not request another review on your own. Summarize for the user which blocking points the last critique still holds open, and ask them to decide: they can review or merge the build themselves, adjust the task, or ask for another AI review. If the user explicitly asks for another round in their own words, relay it by calling run_review with userRequested: true.
+
+最终结论（对照验收）
+----------------------
+① 2 轮熔断：PASS。第 1、2 轮放行后，第 3 轮（无 userRequested）被拒，拦截消息确认"2 consecutive AI-requested review rounds"并指路用户授权路径。
+② 一次授权清空轮次（豁免放行且不记 byAgent）：PASS。用户亲口授权（"再来"）后第 4 轮 userRequested=true 放行；且其后第 5 轮不带标志仍放行——证明该豁免轮未计入 byAgent、streak 归零。
+③ 重开 2 轮窗口：PASS。豁免后第 5、6 轮放行（新窗口攒满 2 轮），第 7 轮不带标志再次被拒（拦截消息同为 2 consecutive，与第 3 轮一致）。
+
+【备注】
+测试环境：amas 项目，执行/修订 agent ds-flash（deepseek-v4-flash），reviewer grok（deepseek-v4-flash），测试 todo #63。
+与上轮（#62，5 轮熔断 + 豁免轮计入计数、不归零）对比：新版为 2 轮熔断 + 豁免轮不记 byAgent + streak 归零重开窗口，一次授权解锁完整新窗口而非仅当轮。
+预期与实际完全一致：熔断、豁免清空、重开窗口三点均按改进设计表现。

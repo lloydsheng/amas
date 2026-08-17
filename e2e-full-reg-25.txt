@@ -1,0 +1,2 @@
+e2e full regression 25 ok - 2026-08-17T08:23:22Z
+hostname: MacBook-Pro-6.local

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Preview sandbox tests</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Preview sandbox tests</h1>
+    <p class="subtitle">弹窗 / 脚本 / 站内前进后退 / 站外新标签 测试页</p>
+    <p>浅底深字样式来自同目录 <code>style.css</code>，说明相对 CSS 已加载。</p>
+    <hr>
+
+    <h2>1. 内联脚本（allow-scripts）</h2>
+    <p>页面加载后由内联脚本写入：<strong id="script-status">（等待脚本执行…）</strong></p>
+
+    <h2>2. 外部脚本 app.js</h2>
+    <p>由 <code>app.js</code> 写入：<strong id="js-file">（等待 app.js…）</strong></p>
+
+    <h2>3. window.open 弹窗</h2>
+    <p><button type="button" id="popup-btn">window.open 打开 page2.html</button></p>
+
+    <h2>4. 链接测试</h2>
+    <ul>
+      <li><a target="_blank" href="page2.html">target blank 本仓库</a>（同仓库新标签）</li>
+      <li><a href="https://example.com" id="ext-link">站外 example.com</a>（脚本不拦截；预览注入会改成 _blank）</li>
+      <li><a href="#bottom">锚点到底部</a>（页内锚点）</li>
+      <li><a href="page2.html">站内打开 page2</a>（同预览内导航）</li>
+    </ul>
+
+    <h2>5. Origin 探针</h2>
+    <p>读取 <code>document.cookie</code> 与 <code>localStorage</code> 的结果：<code id="origin-probe">（探测中…）</code></p>
+    <p class="hint">预期：opaque origin 下抛 SecurityError（或读到空值），页面仍可用。</p>
+
+    <p id="bottom">—— 底部锚点目标（#bottom）——</p>
+  </main>
+  <script src="app.js"></script>
+  <script>
+    // 内联脚本：证明 allow-scripts 生效
+    document.addEventListener('DOMContentLoaded', function () {
+      var status = document.getElementById('script-status');
+      if (status) {
+        status.textContent = 'SCRIPT_OK';
+      }
+
+      // window.open 弹窗按钮
+      var btn = document.getElementById('popup-btn');
+      if (btn) {
+        btn.addEventListener('click', function () {
+          window.open('page2.html', '_blank');
+        });
+      }
+
+      // Origin 探针：cookie 与 localStorage
+      var probeEl = document.getElementById('origin-probe');
+      if (probeEl) {
+        var lines = [];
+        try {
+          lines.push('cookie=' + (document.cookie === '' ? '(empty)' : document.cookie));
+        } catch (e) {
+          lines.push('cookie=ERROR(' + e.name + ')');
+        }
+        try {
+          lines.push('localStorage=' + String(localStorage.getItem('probe')));
+        } catch (e) {
+          lines.push('localStorage=ERROR(' + e.name + ')');
+        }
+        probeEl.textContent = lines.join(' | ');
+      }
+    });
+  </script>
+</body>
+</html>

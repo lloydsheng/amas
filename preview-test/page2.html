@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page 2</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="card">
+    <h1>Page 2</h1>
+    <p class="subtitle">第二页：用于站内前进 / 后退（← →）测试</p>
+    <p>本页同样带内联脚本，加载后写入：<strong id="script-status">（等待脚本执行…）</strong></p>
+    <hr>
+    <ul>
+      <li><a href="index.html">回 index</a>（站内导航）</li>
+      <li><a href="index.html#bottom">回 index 底部锚点</a></li>
+    </ul>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var status = document.getElementById('script-status');
+      if (status) {
+        status.textContent = 'SCRIPT_OK';
+      }
+    });
+  </script>
+</body>
+</html>

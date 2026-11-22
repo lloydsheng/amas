@@ -1,0 +1,11 @@
+amas shortest-path regression marker #17
+utc: 2026-11-22T05:12:03Z
+
+chain: implement -> review -> merge
+  1. implement: 直接实现，不走 plan、不做独立 AI review；仅在仓库根目录新增本标记文件，不改业务逻辑。
+  2. review: 停在 review gate，等 Chief/用户查看本次改动。
+  3. merge: 由 Chief 合并到 master；执行 agent 不调用 merge_branch，也不创建或合并 PR。
+
+executor:
+  hostname: z-job-1
+  machineId: mVorv37KMuxvDJH61yryg
